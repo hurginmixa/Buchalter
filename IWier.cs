@@ -1,0 +1,7 @@
+﻿namespace Buchalter
+{
+    interface IWier
+    {
+         
+    }
+}
