@@ -6,7 +6,7 @@ using Buchalter.Types;
 
 namespace Buchalter
 {
-    static class Program
+    internal static class Program
     {
         public const string WiersFileMask = "wiers*.txt";
         const string AmountsFilePath = "amounts.txt";
@@ -14,18 +14,18 @@ namespace Buchalter
         static void Main()
         {
             List<Amount> amounts = LoadAmounts();
-            List<WiersFile> wiersFiles = Tools.LoadWiersFiles();
+            List<WiresFile> wiersFiles = Tools.LoadWiresFiles();
 
-            Tools.RewriteWiersFiles(wiersFiles);
+            Tools.RewriteWiresFiles(wiersFiles);
 
-            Dictionary<string, SctMoving> movings = Tools.GetMovings(amounts, wiersFiles);
+            Dictionary<string, SctMoving> movingList = Tools.GetMovingList(amounts, wiersFiles);
 
-            VD001.Run(movings);
-            VD002.Run(movings);
-            VD003.Run(movings);
-            VD004.Run(movings);
+            VD001.Run(movingList);
+            VD002.Run(movingList);
+            VD003.Run(movingList);
+            VD004.Run(movingList);
 
-            Console.WriteLine(movings.Count);
+            Console.WriteLine(movingList.Count);
         }
 
         public static List<Amount> LoadAmounts()

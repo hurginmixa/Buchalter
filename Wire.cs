@@ -1,9 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using Buchalter.Types;
+﻿using Buchalter.Types;
 
 namespace Buchalter
 {
-    class Wier : IWier
+    internal class Wire : IWire
     {
         public readonly Date Date;
         public readonly string DebSct;
@@ -12,7 +11,7 @@ namespace Buchalter
         public readonly string Remark;
         public readonly int RunNumber;
 
-        public Wier(Date date, string debSct, string krdSct, Sum sum, string remark, int runNumber)
+        public Wire(Date date, string debSct, string krdSct, Sum sum, string remark, int runNumber)
         {
             Date = date;
             RunNumber = runNumber;

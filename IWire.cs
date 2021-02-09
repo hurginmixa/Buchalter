@@ -1,6 +1,6 @@
 ﻿namespace Buchalter
 {
-    interface IWier
+    internal interface IWire
     {
          
     }

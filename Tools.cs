@@ -7,37 +7,37 @@ using Buchalter.Types;
 
 namespace Buchalter
 {
-    static class Tools
+    internal static class Tools
     {
-        private class WierDelimiter : IWier
+        private class WireDelimiter : IWire
         {
             public readonly string Remark;
 
-            public WierDelimiter(string remark)
+            public WireDelimiter(string remark)
             {
                 Remark = remark;
             }
         }
 
-        public static List<WiersFile> LoadWiersFiles()
+        public static List<WiresFile> LoadWiresFiles()
         {
             string[] files = Directory.GetFiles(".", Program.WiersFileMask);
 
-            List<WiersFile> list = new List<WiersFile>();
+            List<WiresFile> list = new List<WiresFile>();
 
             foreach (string file in files)
             {
-                list.Add(new WiersFile(file));                
+                list.Add(new WiresFile(file));                
             }
 
             return list;
         }
 
-        public static List<IWier> LoadWiers(string wiersFileName)
+        public static List<IWire> LoadWires(string wiresFileName)
         {
-            List<IWier> retValue = new List<IWier>();
+            List<IWire> retValue = new List<IWire>();
 
-            string[] strings = File.ReadAllLines(wiersFileName, Encoding.UTF8);
+            string[] strings = File.ReadAllLines(wiresFileName, Encoding.UTF8);
             for (int i = 0; i < strings.Length; i++)
             {
                 try
@@ -51,7 +51,7 @@ namespace Buchalter
 
                     if (line == new string('=', line.Length))
                     {
-                        retValue.Add(new WierDelimiter(line));
+                        retValue.Add(new WireDelimiter(line));
                         continue;
                     }
 
@@ -67,9 +67,9 @@ namespace Buchalter
                     Sum summa = Sum.Parse(tokens[3].Text.Trim().Replace(',', '.'));
                     string remark = (tokens.Length >= 5) ? tokens[4].Text.Trim() : String.Empty;
 
-                    Wier wier = new Wier(date, debSct, krdSct, summa, remark, i);
+                    Wire wire = new Wire(date, debSct, krdSct, summa, remark, i);
 
-                    retValue.Add(wier);
+                    retValue.Add(wire);
                 }
                 catch (Exception e)
                 {
@@ -80,7 +80,7 @@ namespace Buchalter
             return retValue;
         }
 
-        public static Dictionary<string, SctMoving> GetMovings(IList<Amount> amounts, IList<WiersFile> wierFiles)
+        public static Dictionary<string, SctMoving> GetMovingList(IEnumerable<Amount> amounts, IEnumerable<WiresFile> wireFiles)
         {
             Dictionary<string, SctMoving> movings = new Dictionary<string, SctMoving>();
 
@@ -96,9 +96,9 @@ namespace Buchalter
                 sctMovie.SNach += amount.Sum;
             }
 
-            foreach (WiersFile file in wierFiles)
+            foreach (WiresFile file in wireFiles)
             {
-                foreach (Wier wier in file.Wiers.Where(wier => wier != null && wier.GetType() == typeof(Wier)).Select(wier => (Wier)wier))
+                foreach (Wire wier in file.Wires.Where(wier => wier != null && wier.GetType() == typeof(Wire)).Select(wier => (Wire)wier))
                 {
                     SctMoving sctMovie;
                     if (!movings.TryGetValue(wier.DebSct, out sctMovie))
@@ -120,36 +120,36 @@ namespace Buchalter
             return movings;
         }
 
-        public static void RewriteWiersFiles(List<WiersFile> wierFiles)
+        public static void RewriteWiresFiles(List<WiresFile> wireFiles)
         {
-            foreach (WiersFile wierFile in wierFiles)
+            foreach (WiresFile wierFile in wireFiles)
             {
                 string bakFileName = MakeBakFileName(wierFile.FileName);
                 File.Delete(bakFileName);
                 File.Move(wierFile.FileName, bakFileName);
 
-                var wiers = wierFile.Wiers;
+                var wiers = wierFile.Wires;
                 string[] lines = new string[wiers.Count];
 
                 for (int i = 0; i < wiers.Count; i++)
                 {
-                    IWier wierTmp = wiers[i];
-                    if (wierTmp == null)
+                    IWire wireTmp = wiers[i];
+                    if (wireTmp == null)
                     {
                         lines[i] = string.Empty;
                         continue;
                     }
 
-                    if (wierTmp.GetType() == typeof(WierDelimiter))
+                    if (wireTmp.GetType() == typeof(WireDelimiter))
                     {
-                        lines[i] = ((WierDelimiter)wierTmp).Remark;
+                        lines[i] = ((WireDelimiter)wireTmp).Remark;
                         continue;
                     }
 
-                    Wier wier = (Wier) wierTmp;
-                    //lines[i] = $"{wier.Date:00} ! {wier.DebSct,-20} ! {wier.KrdSct,-20} ! {wier.Sum,12:0.00} ! {wier.Remark}";
-                    lines[i] = string.Format("{0:00} ! {1,-20} ! {2,-20} ! {3,12:0.00} ! {4}", wier.Date, wier.DebSct,
-                        wier.KrdSct, wier.Sum, wier.Remark);
+                    Wire wire = (Wire) wireTmp;
+                    //lines[i] = $"{wire.Date:00} ! {wire.DebSct,-20} ! {wire.KrdSct,-20} ! {wire.Sum,12:0.00} ! {wire.Remark}";
+                    lines[i] = string.Format("{0:00} ! {1,-20} ! {2,-20} ! {3,12:0.00} ! {4}", wire.Date, wire.DebSct,
+                        wire.KrdSct, wire.Sum, wire.Remark);
                 }
 
                 File.WriteAllLines(wierFile.FileName, lines, Encoding.UTF8);

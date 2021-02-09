@@ -7,12 +7,12 @@ namespace Buchalter
 {
     static class VD001
     {
-        public static void Run(Dictionary<string, SctMoving> movings)
+        public static void Run(Dictionary<string, SctMoving> movingList)
         {
-            Run(movings, "vd001.txt");
+            Run(movingList, "vd001.txt");
         }
 
-        public static void Run(Dictionary<string, SctMoving> movings, string outputFilePath)
+        public static void Run(Dictionary<string, SctMoving> movingList, string outputFilePath)
         {
             using (StreamWriter tw = new StreamWriter(outputFilePath, false, Encoding.UTF8))
             {
@@ -21,12 +21,12 @@ namespace Buchalter
                 Sum krd = new Sum();
                 Sum kOst = new Sum();
 
-                List<string> keys = new List<string>(movings.Keys);
+                List<string> keys = new List<string>(movingList.Keys);
                 keys.Sort();
 
                 foreach (string key in keys)
                 {
-                    SctMoving moving = movings[key];
+                    SctMoving moving = movingList[key];
 
                     tw.WriteLine("{0,-20} {1,12:0.00} {2,12:0.00} {3,12:0.00} {4,12:0.00}", key, moving.SNach, moving.SDebt, moving.SKred, moving.SKont);
 

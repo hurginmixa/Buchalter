@@ -8,16 +8,16 @@ namespace Buchalter
 {
     internal static class VD003
     {
-        public static void Run(Dictionary<string, SctMoving> movings)
+        public static void Run(Dictionary<string, SctMoving> movingList)
         {
             using (StreamWriter tw = new StreamWriter("vd003.txt", false, Encoding.UTF8))
             {
-                List<string> sctNames = new List<string>(movings.Keys);
+                List<string> sctNames = new List<string>(movingList.Keys);
                 sctNames.Sort();
 
                 foreach (string sctName in sctNames)
                 {
-                    SctReport(sctName, tw, movings[sctName]);
+                    SctReport(sctName, tw, movingList[sctName]);
                 }
             }
         }
@@ -30,18 +30,18 @@ namespace Buchalter
             tw.WriteLine();
             tw.WriteLine("{0,-52} {1,20:0.00}", sctName, amount);
 
-            List<WierPrint> wiers = new List<WierPrint>();
+            List<WirePrint> wiers = new List<WirePrint>();
 
-            foreach(Wier wier in sctMoving.DebList)
+            foreach(Wire wier in sctMoving.DebList)
             {
-                WierPrint wierPrint = new WierPrint(wier.Date, wier.KrdSct, wier.Sum, wier.Remark, wier.RunNumber);
-                wiers.Add(wierPrint);
+                WirePrint wirePrint = new WirePrint(wier.Date, wier.KrdSct, wier.Sum, wier.Remark, wier.RunNumber);
+                wiers.Add(wirePrint);
             }
 
-            foreach(Wier wier in sctMoving.KrdList)
+            foreach(Wire wier in sctMoving.KrdList)
             {
-                WierPrint wierPrint = new WierPrint(wier.Date, wier.DebSct, -wier.Sum, wier.Remark, wier.RunNumber);
-                wiers.Add(wierPrint);
+                WirePrint wirePrint = new WirePrint(wier.Date, wier.DebSct, -wier.Sum, wier.Remark, wier.RunNumber);
+                wiers.Add(wirePrint);
             }
 
             if (wiers.Count == 0)
@@ -51,14 +51,14 @@ namespace Buchalter
 
             tw.WriteLine("--------------------------------------------------------------------------");
 
-            Comparison<WierPrint> comparison = delegate(WierPrint p1, WierPrint p2)
+            Comparison<WirePrint> comparison = delegate(WirePrint p1, WirePrint p2)
             {
                 int tmp = p1.Date.CompareTo(p2.Date);
                 return tmp != 0 ? tmp : p1.RunNumber.CompareTo(p2.RunNumber);
             };
             wiers.Sort(comparison);
 
-            foreach(WierPrint wier in wiers)
+            foreach(WirePrint wier in wiers)
             {
                 amount += wier.Sum;
 

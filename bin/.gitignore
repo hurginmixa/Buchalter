@@ -1,1 +1,3 @@
 *.bak
+netcoreapp3.1/
+Debug/

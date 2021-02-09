@@ -2,7 +2,7 @@
 
 namespace Buchalter
 {
-    class WierPrint
+    internal class WirePrint
     {
         public readonly Date Date;
         public readonly string Sct;
@@ -10,7 +10,7 @@ namespace Buchalter
         public readonly string Remark;
         public readonly int RunNumber;
 
-        public WierPrint(Date date, string sct, Sum sum, string remark, int runNumber)
+        public WirePrint(Date date, string sct, Sum sum, string remark, int runNumber)
         {
             Date = date;
             RunNumber = runNumber;

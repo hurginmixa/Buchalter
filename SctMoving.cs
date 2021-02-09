@@ -3,7 +3,7 @@ using Buchalter.Types;
 
 namespace Buchalter
 {
-    class SctMoving
+    internal class SctMoving
     {
         public Sum SNach;
 
@@ -12,9 +12,9 @@ namespace Buchalter
             get
             {
                 Sum ret = new Sum();
-                foreach (Wier wier in myDebList)
+                foreach (Wire wire in myDebList)
                 {
-                    ret += wier.Sum;
+                    ret += wire.Sum;
                 }
 
                 return ret;
@@ -26,31 +26,22 @@ namespace Buchalter
             get
             {
                 Sum ret = new Sum();
-                foreach (Wier wier in myKrdList)
+                foreach (Wire wire in myKrdList)
                 {
-                    ret += wier.Sum;
+                    ret += wire.Sum;
                 }
 
                 return ret;
             }
         }
 
-        public Sum SKont
-        {
-            get { return SNach + SDebt - SKred; }
-        }
+        public Sum SKont => SNach + SDebt - SKred;
 
-        public List<Wier> DebList
-        {
-            get { return myDebList; }
-        }
+        public List<Wire> DebList => myDebList;
 
-        public List<Wier> KrdList
-        {
-            get { return myKrdList; }
-        }
+        public List<Wire> KrdList => myKrdList;
 
-        private readonly List<Wier> myDebList = new List<Wier>();
-        private readonly List<Wier> myKrdList = new List<Wier>();
+        private readonly List<Wire> myDebList = new List<Wire>();
+        private readonly List<Wire> myKrdList = new List<Wire>();
     }
 }
