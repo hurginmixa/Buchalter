@@ -8,27 +8,26 @@ namespace Buchalter
 {
     internal static class VD003
     {
-        public static void Run(Dictionary<AccountName, AccumulatedBalance> movingList)
+        public static void Run(Dictionary<AccountName, AccumulatedBalance> balances)
         {
-            using (StreamWriter tw = new StreamWriter("vd003.txt", false, Encoding.UTF8))
-            {
-                List<AccountName> sctNames = new List<AccountName>(movingList.Keys);
-                sctNames.Sort();
+            using StreamWriter tw = new StreamWriter("vd003.txt", false, Encoding.UTF8);
+            
+            List<AccountName> accountNames = new List<AccountName>(balances.Keys);
+            accountNames.Sort();
 
-                foreach (AccountName sctName in sctNames)
-                {
-                    SctReport(sctName, tw, movingList[sctName]);
-                }
+            foreach (AccountName accountName in accountNames)
+            {
+                AccountReport(tw, accountName, balances[accountName]);
             }
         }
 
-        private static void SctReport(AccountName accountName, TextWriter tw, AccumulatedBalance accumulatedBalance)
+        private static void AccountReport(TextWriter tw, AccountName accountName, AccumulatedBalance accumulatedBalance)
         {
             Summa amount = accumulatedBalance.SBegin;
 
             tw.WriteLine("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
             tw.WriteLine();
-            tw.WriteLine("{0,-52} {1,20:0.00}", accountName, amount);
+            tw.WriteLine($"{accountName,-52} {amount,20:0.00}");
 
             List<AccountPrintInfo> accountForPrintList = new List<AccountPrintInfo>();
 

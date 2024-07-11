@@ -24,6 +24,7 @@ namespace Buchalter
             VD002.Run(balances);
             VD003.Run(balances);
             VD004.Run(balances);
+            VD005.Run(balances);
 
             Console.WriteLine(balances.Count);
         }
