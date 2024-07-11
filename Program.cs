@@ -8,29 +8,29 @@ namespace Buchalter
 {
     internal static class Program
     {
-        public const string WiersFileMask = "wiers*.txt";
+        public const string AccountEntriesFileMask = "wiers*.txt";
         const string AmountsFilePath = "amounts.txt";
 
         static void Main()
         {
-            List<Amount> amounts = LoadAmounts();
-            List<WiresFile> wiersFiles = Tools.LoadWiresFiles();
+            List<OpeningBalance> openingBalances = LoadOpeningBalances();
+            List<AccountEntriesFile> entriesFiles = Tools.LoadAccountEntries();
 
-            Tools.RewriteWiresFiles(wiersFiles);
+            Tools.RewriteAccountEntriesFiles(entriesFiles);
 
-            Dictionary<string, SctMoving> movingList = Tools.GetMovingList(amounts, wiersFiles);
+            Dictionary<AccountName, AccumulatedBalance> balances = Tools.GetBalanceList(openingBalances, entriesFiles);
 
-            VD001.Run(movingList);
-            VD002.Run(movingList);
-            VD003.Run(movingList);
-            VD004.Run(movingList);
+            VD001.Run(balances);
+            VD002.Run(balances);
+            VD003.Run(balances);
+            VD004.Run(balances);
 
-            Console.WriteLine(movingList.Count);
+            Console.WriteLine(balances.Count);
         }
 
-        public static List<Amount> LoadAmounts()
+        public static List<OpeningBalance> LoadOpeningBalances()
         {
-            List<Amount> retValue = new List<Amount>();
+            List<OpeningBalance> retValue = new List<OpeningBalance>();
             foreach (string line in File.ReadAllLines(AmountsFilePath, Encoding.UTF8))
             {
                 string rline = line.Trim(' ', '\t');
@@ -46,11 +46,11 @@ namespace Buchalter
                     throw new Exception("Invalid field number");
                 }
 
-                string sct = tokens[0].Text.Trim();
-                Sum sum = Sum.Parse(tokens[1].Text.Trim().Replace(',', '.'));
-                Amount amount = new Amount(sct, sum);
+                AccountName accountName = (AccountName) tokens[0].Text.Trim();
+                Summa summa = Summa.Parse(tokens[1].Text.Trim().Replace(',', '.'));
+                OpeningBalance openingBalance = new OpeningBalance(accountName, summa);
 
-                retValue.Add(amount);
+                retValue.Add(openingBalance);
             }
 
             return retValue;

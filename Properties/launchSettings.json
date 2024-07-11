@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Buchalter": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Mixa\\MixaSolutions\\Buchalter\\bin"
+    }
+  }
+}

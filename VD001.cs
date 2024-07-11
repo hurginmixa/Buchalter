@@ -7,33 +7,33 @@ namespace Buchalter
 {
     static class VD001
     {
-        public static void Run(Dictionary<string, SctMoving> movingList)
+        public static void Run(Dictionary<AccountName, AccumulatedBalance> balances)
         {
-            Run(movingList, "vd001.txt");
+            Run(balances, "vd001.txt");
         }
 
-        public static void Run(Dictionary<string, SctMoving> movingList, string outputFilePath)
+        public static void Run(Dictionary<AccountName, AccumulatedBalance> balances, string outputFilePath)
         {
             using (StreamWriter tw = new StreamWriter(outputFilePath, false, Encoding.UTF8))
             {
-                Sum nOst = new Sum();
-                Sum deb = new Sum();
-                Sum krd = new Sum();
-                Sum kOst = new Sum();
+                Summa nOst = new Summa();
+                Summa deb = new Summa();
+                Summa krd = new Summa();
+                Summa kOst = new Summa();
 
-                List<string> keys = new List<string>(movingList.Keys);
+                List<AccountName> keys = new List<AccountName>(balances.Keys);
                 keys.Sort();
 
-                foreach (string key in keys)
+                foreach (AccountName key in keys)
                 {
-                    SctMoving moving = movingList[key];
+                    AccumulatedBalance balance = balances[key];
 
-                    tw.WriteLine("{0,-20} {1,12:0.00} {2,12:0.00} {3,12:0.00} {4,12:0.00}", key, moving.SNach, moving.SDebt, moving.SKred, moving.SKont);
+                    tw.WriteLine("{0,-20} {1,12:0.00} {2,12:0.00} {3,12:0.00} {4,12:0.00}", key, balance.SBegin, balance.SDebt, balance.SKred, balance.SEnd);
 
-                    nOst += moving.SNach;
-                    deb += moving.SDebt;
-                    krd += moving.SKred;
-                    kOst += moving.SKont;
+                    nOst += balance.SBegin;
+                    deb += balance.SDebt;
+                    krd += balance.SKred;
+                    kOst += balance.SEnd;
                 }
 
                 tw.WriteLine(new string('-', 72));

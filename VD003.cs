@@ -8,69 +8,66 @@ namespace Buchalter
 {
     internal static class VD003
     {
-        public static void Run(Dictionary<string, SctMoving> movingList)
+        public static void Run(Dictionary<AccountName, AccumulatedBalance> movingList)
         {
             using (StreamWriter tw = new StreamWriter("vd003.txt", false, Encoding.UTF8))
             {
-                List<string> sctNames = new List<string>(movingList.Keys);
+                List<AccountName> sctNames = new List<AccountName>(movingList.Keys);
                 sctNames.Sort();
 
-                foreach (string sctName in sctNames)
+                foreach (AccountName sctName in sctNames)
                 {
                     SctReport(sctName, tw, movingList[sctName]);
                 }
             }
         }
 
-        private static void SctReport(string sctName, TextWriter tw, SctMoving sctMoving)
+        private static void SctReport(AccountName accountName, TextWriter tw, AccumulatedBalance accumulatedBalance)
         {
-            Sum amount = sctMoving.SNach;
+            Summa amount = accumulatedBalance.SBegin;
 
             tw.WriteLine("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
             tw.WriteLine();
-            tw.WriteLine("{0,-52} {1,20:0.00}", sctName, amount);
+            tw.WriteLine("{0,-52} {1,20:0.00}", accountName, amount);
 
-            List<WirePrint> wiers = new List<WirePrint>();
+            List<AccountPrintInfo> accountForPrintList = new List<AccountPrintInfo>();
 
-            foreach(Wire wier in sctMoving.DebList)
+            foreach(AccountEntry wier in accumulatedBalance.DebEntries)
             {
-                WirePrint wirePrint = new WirePrint(wier.Date, wier.KrdSct, wier.Sum, wier.Remark, wier.RunNumber);
-                wiers.Add(wirePrint);
+                AccountPrintInfo accountPrintInfo = new AccountPrintInfo(wier.Date, wier.KrdAccount, wier.Summa, wier.Remark, wier.RunNumber);
+                accountForPrintList.Add(accountPrintInfo);
             }
 
-            foreach(Wire wier in sctMoving.KrdList)
+            foreach(AccountEntry entry in accumulatedBalance.KrdEntries)
             {
-                WirePrint wirePrint = new WirePrint(wier.Date, wier.DebSct, -wier.Sum, wier.Remark, wier.RunNumber);
-                wiers.Add(wirePrint);
+                AccountPrintInfo accountPrintInfo = new AccountPrintInfo(entry.Date, entry.DebAccount, -entry.Summa, entry.Remark, entry.RunNumber);
+                accountForPrintList.Add(accountPrintInfo);
             }
 
-            if (wiers.Count == 0)
+            if (accountForPrintList.Count == 0)
             {
                 return;
             }
 
             tw.WriteLine("--------------------------------------------------------------------------");
 
-            Comparison<WirePrint> comparison = delegate(WirePrint p1, WirePrint p2)
+            int Comparison(AccountPrintInfo p1, AccountPrintInfo p2)
             {
                 int tmp = p1.Date.CompareTo(p2.Date);
                 return tmp != 0 ? tmp : p1.RunNumber.CompareTo(p2.RunNumber);
-            };
-            wiers.Sort(comparison);
+            }
 
-            foreach(WirePrint wier in wiers)
+            accountForPrintList.Sort(Comparison);
+
+            foreach (AccountPrintInfo accountForPrint in accountForPrintList)
             {
-                amount += wier.Sum;
+                amount += accountForPrint.Summa;
 
-                tw.Write("{0:00} {1,-31}", wier.Date, wier.Sct);
-                if(!wier.Sum.IsMinus)
-                {
-                    tw.WriteLine("{0,12:0.00}  {1,25:0.00}  {2}", wier.Sum, amount, wier.Remark);
-                }
-                else
-                {
-                    tw.WriteLine("{0,25:0.00}  {1,12:0.00}  {2}", -wier.Sum, amount, wier.Remark);
-                }
+                tw.Write($"{accountForPrint.Date:00} {accountForPrint.AccountName,-31}");
+
+                tw.WriteLine(!accountForPrint.Summa.IsMinus
+                    ? $"{accountForPrint.Summa,12:0.00}  {amount,25:0.00}  {accountForPrint.Remark}"
+                    : $"{-accountForPrint.Summa,25:0.00}  {amount,12:0.00}  {accountForPrint.Remark}");
             }
         }
     }

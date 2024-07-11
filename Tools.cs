@@ -9,35 +9,35 @@ namespace Buchalter
 {
     internal static class Tools
     {
-        private class WireDelimiter : IWire
+        private class AccountEntryDelimiter : IAccountEntry
         {
             public readonly string Remark;
 
-            public WireDelimiter(string remark)
+            public AccountEntryDelimiter(string remark)
             {
                 Remark = remark;
             }
         }
 
-        public static List<WiresFile> LoadWiresFiles()
+        public static List<AccountEntriesFile> LoadAccountEntries()
         {
-            string[] files = Directory.GetFiles(".", Program.WiersFileMask);
+            string[] files = Directory.GetFiles(".", Program.AccountEntriesFileMask);
 
-            List<WiresFile> list = new List<WiresFile>();
+            List<AccountEntriesFile> list = new List<AccountEntriesFile>();
 
             foreach (string file in files)
             {
-                list.Add(new WiresFile(file));                
+                list.Add(new AccountEntriesFile(file));                
             }
 
             return list;
         }
 
-        public static List<IWire> LoadWires(string wiresFileName)
+        public static List<IAccountEntry> LoadAccountEntries(string accountEntriesFileName)
         {
-            List<IWire> retValue = new List<IWire>();
+            List<IAccountEntry> retValue = new List<IAccountEntry>();
 
-            string[] strings = File.ReadAllLines(wiresFileName, Encoding.UTF8);
+            string[] strings = File.ReadAllLines(accountEntriesFileName, Encoding.UTF8);
             for (int i = 0; i < strings.Length; i++)
             {
                 try
@@ -51,7 +51,7 @@ namespace Buchalter
 
                     if (line == new string('=', line.Length))
                     {
-                        retValue.Add(new WireDelimiter(line));
+                        retValue.Add(new AccountEntryDelimiter(line));
                         continue;
                     }
 
@@ -62,14 +62,14 @@ namespace Buchalter
                     }
 
                     Date date = Date.Parse(tokens[0].Text.Trim());
-                    string debSct = tokens[1].Text.Trim();
-                    string krdSct = tokens[2].Text.Trim();
-                    Sum summa = Sum.Parse(tokens[3].Text.Trim().Replace(',', '.'));
+                    AccountName debSct = (AccountName) tokens[1].Text.Trim();
+                    AccountName krdSct = (AccountName) tokens[2].Text.Trim();
+                    Summa summa = Summa.Parse(tokens[3].Text.Trim().Replace(',', '.'));
                     string remark = (tokens.Length >= 5) ? tokens[4].Text.Trim() : String.Empty;
 
-                    Wire wire = new Wire(date, debSct, krdSct, summa, remark, i);
+                    AccountEntry accountEntry = new AccountEntry(date, debSct, krdSct, summa, remark, i);
 
-                    retValue.Add(wire);
+                    retValue.Add(accountEntry);
                 }
                 catch (Exception e)
                 {
@@ -80,79 +80,80 @@ namespace Buchalter
             return retValue;
         }
 
-        public static Dictionary<string, SctMoving> GetMovingList(IEnumerable<Amount> amounts, IEnumerable<WiresFile> wireFiles)
+        public static Dictionary<AccountName, AccumulatedBalance> GetBalanceList(IEnumerable<OpeningBalance> amounts, IEnumerable<AccountEntriesFile> entriesFiles)
         {
-            Dictionary<string, SctMoving> movings = new Dictionary<string, SctMoving>();
+            Dictionary<AccountName, AccumulatedBalance> balances = new Dictionary<AccountName, AccumulatedBalance>();
 
-            foreach (Amount amount in amounts)
+            foreach (OpeningBalance amount in amounts)
             {
-                SctMoving sctMovie;
-                if (!movings.TryGetValue(amount.Sct, out sctMovie))
+                if (!balances.TryGetValue(amount.AccountName, out AccumulatedBalance accountAmount))
                 {
-                    sctMovie = new SctMoving();
-                    movings[amount.Sct] = sctMovie;
+                    accountAmount = new AccumulatedBalance();
+                    balances[amount.AccountName] = accountAmount;
                 }
 
-                sctMovie.SNach += amount.Sum;
+                accountAmount.SBegin += amount.Summa;
             }
 
-            foreach (WiresFile file in wireFiles)
+            foreach (AccountEntriesFile file in entriesFiles)
             {
-                foreach (Wire wier in file.Wires.Where(wier => wier != null && wier.GetType() == typeof(Wire)).Select(wier => (Wire)wier))
-                {
-                    SctMoving sctMovie;
-                    if (!movings.TryGetValue(wier.DebSct, out sctMovie))
-                    {
-                        sctMovie = new SctMoving();
-                        movings[wier.DebSct] = sctMovie;
-                    }
-                    sctMovie.DebList.Add(wier);
+                IEnumerable<AccountEntry> accountEntries = file.AccountEntries
+                    .Where(entry => entry != null && entry.GetType() == typeof(AccountEntry))
+                    .Select(entry => (AccountEntry)entry);
 
-                    if (!movings.TryGetValue(wier.KrdSct, out sctMovie))
+                foreach (AccountEntry entry in accountEntries)
+                {
+                    if (!balances.TryGetValue(entry.DebAccount, out AccumulatedBalance amount))
                     {
-                        sctMovie = new SctMoving();
-                        movings[wier.KrdSct] = sctMovie;
+                        amount = new AccumulatedBalance();
+                        balances[entry.DebAccount] = amount;
                     }
-                    sctMovie.KrdList.Add(wier);
+                    amount.DebEntries.Add(entry);
+
+                    if (!balances.TryGetValue(entry.KrdAccount, out amount))
+                    {
+                        amount = new AccumulatedBalance();
+                        balances[entry.KrdAccount] = amount;
+                    }
+
+                    amount.KrdEntries.Add(entry);
                 }
             }
 
-            return movings;
+            return balances;
         }
 
-        public static void RewriteWiresFiles(List<WiresFile> wireFiles)
+        public static void RewriteAccountEntriesFiles(List<AccountEntriesFile> entriesFiles)
         {
-            foreach (WiresFile wierFile in wireFiles)
+            foreach (AccountEntriesFile entriesFile in entriesFiles)
             {
-                string bakFileName = MakeBakFileName(wierFile.FileName);
+                string bakFileName = MakeBakFileName(entriesFile.FileName);
                 File.Delete(bakFileName);
-                File.Move(wierFile.FileName, bakFileName);
+                File.Move(entriesFile.FileName, bakFileName);
 
-                var wiers = wierFile.Wires;
-                string[] lines = new string[wiers.Count];
+                IReadOnlyList<IAccountEntry> accountEntries = entriesFile.AccountEntries;
+                string[] lines = new string[accountEntries.Count];
 
-                for (int i = 0; i < wiers.Count; i++)
+                for (int i = 0; i < accountEntries.Count; i++)
                 {
-                    IWire wireTmp = wiers[i];
-                    if (wireTmp == null)
+                    IAccountEntry accountEntryTmp = accountEntries[i];
+                    if (accountEntryTmp == null)
                     {
                         lines[i] = string.Empty;
                         continue;
                     }
 
-                    if (wireTmp.GetType() == typeof(WireDelimiter))
+                    if (accountEntryTmp.GetType() == typeof(AccountEntryDelimiter))
                     {
-                        lines[i] = ((WireDelimiter)wireTmp).Remark;
+                        lines[i] = ((AccountEntryDelimiter)accountEntryTmp).Remark;
                         continue;
                     }
 
-                    Wire wire = (Wire) wireTmp;
-                    //lines[i] = $"{wire.Date:00} ! {wire.DebSct,-20} ! {wire.KrdSct,-20} ! {wire.Sum,12:0.00} ! {wire.Remark}";
-                    lines[i] = string.Format("{0:00} ! {1,-20} ! {2,-20} ! {3,12:0.00} ! {4}", wire.Date, wire.DebSct,
-                        wire.KrdSct, wire.Sum, wire.Remark);
+                    AccountEntry accountEntry = (AccountEntry) accountEntryTmp;
+                    lines[i] = $"{accountEntry.Date:00} ! {accountEntry.DebAccount,-20} ! {accountEntry.KrdAccount,-20} ! {accountEntry.Summa,12:0.00} ! {accountEntry.Remark}";
                 }
 
-                File.WriteAllLines(wierFile.FileName, lines, Encoding.UTF8);
+                File.WriteAllLines(entriesFile.FileName, lines, Encoding.UTF8);
             }
         }
 
