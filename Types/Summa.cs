@@ -22,6 +22,4 @@ internal record Summa(double Value) : IFormattable
     public static Summa Parse(string input) => (Summa) double.Parse(input);
 
     string IFormattable.ToString(string format, IFormatProvider formatProvider) => Value.ToString(format, formatProvider);
-
-    public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 }
