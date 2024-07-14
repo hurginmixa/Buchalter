@@ -1,59 +1,27 @@
 using System;
+using System.Globalization;
 
-namespace Buchalter.Types
+namespace Buchalter.Types;
+
+internal record Summa(double Value) : IFormattable
 {
-    internal struct Summa : IFormattable
-    {
-        private readonly double _value;
+    public static explicit operator Summa(double value) => new(value);
 
-        private Summa(double value)
-        {
-            _value = value;
-        }
+    public static explicit operator double(Summa src) => src.Value;
 
-        public static explicit operator Summa(double value)
-        {
-            return new Summa(value);
-        }
+    public static Summa operator +(Summa src1, Summa src2) => new((double)src1 + (double)src2);
 
-        public static explicit operator double(Summa src)
-        {
-            return src._value;
-        }
+    public static Summa operator -(Summa src1, Summa src2) => new((double)src1 - (double)src2);
 
-        public static Summa operator +(Summa src1, Summa src2)
-        {
-            return new Summa((double)src1 + (double)src2);
-        }
+    public static Summa operator -(Summa src) => new(-(double)src);
 
-        public static Summa operator -(Summa src1, Summa src2)
-        {
-            return new Summa((double)src1 - (double)src2);
-        }
+    public bool IsMinus => Value < 0;
 
-        public static Summa operator -(Summa src)
-        {
-            return new Summa(-(double)src);
-        }
+    public bool IsZero => Math.Abs(Value) < 1e-6;
 
-        public bool IsMinus
-        {
-            get { return _value < 0; }
-        }
+    public static Summa Parse(string input) => (Summa) double.Parse(input);
 
-        public bool IsZero
-        {
-            get { return Math.Abs(_value) < 1e-6; }
-        }
+    string IFormattable.ToString(string format, IFormatProvider formatProvider) => Value.ToString(format, formatProvider);
 
-        public static Summa Parse(string input)
-        {
-            return (Summa) double.Parse(input);
-        }
-
-        string IFormattable.ToString(string format, IFormatProvider formatProvider)
-        {
-            return _value.ToString(format, formatProvider);
-        }
-    }
+    public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 }

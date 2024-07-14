@@ -1,39 +1,20 @@
 using System;
 
-namespace Buchalter.Types
+namespace Buchalter.Types;
+
+internal record Date(int Value) : IComparable<Date>, IFormattable
 {
-    internal struct Date : IFormattable, IComparable<Date>
+    public int CompareTo(Date other)
     {
-        private readonly int _value;
-
-        private Date(int value)
-        {
-            _value = value;
-        }
-
-        public static explicit operator Date(int value)
-        {
-            return new Date(value);
-        }
-
-        public static explicit operator int(Date src)
-        {
-            return src._value;
-        }
-
-        public static Date Parse(string input)
-        {
-            return (Date) double.Parse(input);
-        }
-
-        string IFormattable.ToString(string format, IFormatProvider formatProvider)
-        {
-            return _value.ToString(format, formatProvider);
-        }
-
-        public int CompareTo(Date date)
-        {
-            return _value.CompareTo(date._value);
-        }
+        if (ReferenceEquals(this, other)) return 0;
+        if (ReferenceEquals(null, other)) return 1;
+        return Value.CompareTo(other.Value);
     }
+
+    string IFormattable.ToString(string format, IFormatProvider formatProvider)
+    {
+        return Value.ToString(format, formatProvider);
+    }
+
+    public static Date Parse(string s) => new (int.Parse(s));
 }

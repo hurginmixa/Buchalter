@@ -10,10 +10,10 @@ namespace Buchalter
     {
         public static void Run(Dictionary<AccountName, AccumulatedBalance> amountList)
         {
-            Summa sNach = new Summa();
-            Summa sDebt = new Summa();
-            Summa sKred = new Summa();
-            Summa sKont = new Summa();
+            Summa sNach = new Summa(0);
+            Summa sDebt = new Summa(0);
+            Summa sKred = new Summa(0);
+            Summa sKont = new Summa(0);
 
             List<AccountName> sctNames = new List<AccountName>(amountList.Keys);
             sctNames.Sort();

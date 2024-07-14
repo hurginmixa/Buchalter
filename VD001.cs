@@ -16,10 +16,10 @@ namespace Buchalter
         {
             using (StreamWriter tw = new StreamWriter(outputFilePath, false, Encoding.UTF8))
             {
-                Summa nOst = new Summa();
-                Summa deb = new Summa();
-                Summa krd = new Summa();
-                Summa kOst = new Summa();
+                Summa nOst = new Summa(0);
+                Summa deb = new Summa(0);
+                Summa krd = new Summa(0);
+                Summa kOst = new Summa(0);
 
                 List<AccountName> keys = new List<AccountName>(balances.Keys);
                 keys.Sort();

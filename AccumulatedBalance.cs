@@ -19,7 +19,7 @@ namespace Buchalter
         {
             get
             {
-                Summa ret = new Summa();
+                Summa ret = new Summa(0);
                 foreach (AccountEntry entry in _debEntries)
                 {
                     ret += entry.Summa;
@@ -33,7 +33,7 @@ namespace Buchalter
         {
             get
             {
-                Summa ret = new Summa();
+                Summa ret = new Summa(0);
                 foreach (AccountEntry entry in _krdEntries)
                 {
                     ret += entry.Summa;
