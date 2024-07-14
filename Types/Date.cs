@@ -11,10 +11,9 @@ internal record Date(int Value) : IComparable<Date>, IFormattable
         return Value.CompareTo(other.Value);
     }
 
-    string IFormattable.ToString(string format, IFormatProvider formatProvider)
-    {
-        return Value.ToString(format, formatProvider);
-    }
+    string IFormattable.ToString(string format, IFormatProvider formatProvider) => Value.ToString(format, formatProvider);
+
+    public override string ToString() => Value.ToString();
 
     public static Date Parse(string s) => new (int.Parse(s));
 }
